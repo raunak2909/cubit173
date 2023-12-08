@@ -1,15 +1,25 @@
 import 'package:cubit173/counter_cubit.dart';
 import 'package:cubit173/counter_state.dart';
+import 'package:cubit173/list_cubit.dart';
+import 'package:cubit173/list_state.dart';
 import 'package:cubit173/next_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 void main() {
-  runApp( BlocProvider(
-    create: (context) => CounterCubit(),
-    child: MyApp(),
-  ),);
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => CounterCubit(),
+        ),
+        BlocProvider(
+          create: (context) => ListCubit(),
+        ),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -19,18 +29,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: MyHomePage()
-    );
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: MyHomePage());
   }
 }
 
 class MyHomePage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -41,51 +49,48 @@ class MyHomePage extends StatelessWidget {
     // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text("Cubit"),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            BlocBuilder<CounterCubit, CounterState>(
-              builder: (context, state){
-                return Text(
-                  '${state.count}',
-                  style: Theme.of(context).textTheme.headlineMedium,
+      body: BlocBuilder<ListCubit, ListState>(
+        builder: (_, state) {
+          var dataFromCubit = state.mData;
+          return ListView.builder(
+              itemCount: dataFromCubit.length,
+              itemBuilder: (_, index) {
+                return ListTile(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NextPage(
+                            isUpdate: true,
+                            mIndex: index,
+                            mTitle: '${dataFromCubit[index]['title']}',
+                            mDesc: '${dataFromCubit[index]['desc']}'
+                          ),
+                        ));
+                  },
+                  title: Text('${dataFromCubit[index]['title']}'),
+                  subtitle: Text('${dataFromCubit[index]['desc']}'),
+                  trailing: IconButton(
+                    onPressed: (){
+                      BlocProvider.of<ListCubit>(context).deleteNote(index);
+                    },
+                    icon: Icon(Icons.delete, color: Colors.red,),
+                  ),
                 );
-              },
-            )
-          ],
-        ),
+              });
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: (){
+        onPressed: () {
           //BlocProvider.of<CounterCubit>(context).incrementCount();
-          Navigator.push(context, MaterialPageRoute(builder: (context) => NextPage(),));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NextPage(),
+              ));
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
