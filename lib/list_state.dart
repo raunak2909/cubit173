@@ -1,4 +1,8 @@
 class ListState{
   List<Map<String, dynamic>> mData;
-  ListState({required this.mData});
+  bool isLoading;
+  bool isError;
+  String errorMsg;
+
+  ListState({required this.mData, this.isLoading = false, this.isError = false, this.errorMsg = ""});
 }

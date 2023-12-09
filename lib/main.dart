@@ -55,7 +55,13 @@ class MyHomePage extends StatelessWidget {
       body: BlocBuilder<ListCubit, ListState>(
         builder: (_, state) {
           var dataFromCubit = state.mData;
-          return ListView.builder(
+          if(state.isLoading){
+            return Center(child: CircularProgressIndicator());
+          }
+          if(state.isError){
+            return Center(child: Text('${state.errorMsg}', style: TextStyle(color: Colors.red),),);
+          }
+          return state.mData.isNotEmpty ? ListView.builder(
               itemCount: dataFromCubit.length,
               itemBuilder: (_, index) {
                 return ListTile(
@@ -64,10 +70,10 @@ class MyHomePage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => NextPage(
-                            isUpdate: true,
-                            mIndex: index,
-                            mTitle: '${dataFromCubit[index]['title']}',
-                            mDesc: '${dataFromCubit[index]['desc']}'
+                              isUpdate: true,
+                              mIndex: index,
+                              mTitle: '${dataFromCubit[index]['title']}',
+                              mDesc: '${dataFromCubit[index]['desc']}'
                           ),
                         ));
                   },
@@ -80,7 +86,7 @@ class MyHomePage extends StatelessWidget {
                     icon: Icon(Icons.delete, color: Colors.red,),
                   ),
                 );
-              });
+              }) : Center(child: Text('No Notes yet!!'),);
         },
       ),
       floatingActionButton: FloatingActionButton(
